@@ -66,7 +66,14 @@ enum
   PROP_PACKET_RESEND,
   PROP_FEATURES,
   PROP_NUM_ARV_BUFFERS,
-  PROP_USB_MODE
+  PROP_USB_MODE,
+
+  PROP_WHITE_BALANCE_AUTO,
+  PROP_WHITE_BALANCE_RATIO_R,
+  PROP_WHITE_BALANCE_RATIO_G,
+  PROP_WHITE_BALANCE_RATIO_B,
+
+  PROP_GAMMA
 };
 
 #define GST_TYPE_ARV_AUTO (gst_arv_auto_get_type())
@@ -683,6 +690,12 @@ gst_aravis_init (GstAravis *gst_aravis)
 
 	gst_aravis->all_caps = NULL;
 	gst_aravis->fixed_caps = NULL;
+
+	gst_aravis->white_balance_auto = ARV_AUTO_OFF;
+	gst_aravis->white_balance_ratio_r = 1.0;
+	gst_aravis->white_balance_ratio_g = 1.0;
+	gst_aravis->white_balance_ratio_b = 1.0;
+	gst_aravis->gamma = 1.0;
 }
 
 static void
@@ -809,6 +822,21 @@ gst_aravis_set_property (GObject * object, guint prop_id,
 		case PROP_USB_MODE:
 			gst_aravis->usb_mode = g_value_get_enum (value);
 			break;
+		case PROP_WHITE_BALANCE_AUTO:
+			gst_aravis->exposure_auto = g_value_get_enum (value);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_R:
+			gst_aravis->white_balance_ratio_r = g_value_get_double (value);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_G:
+			gst_aravis->white_balance_ratio_g = g_value_get_double (value);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_B:
+			gst_aravis->white_balance_ratio_b = g_value_get_double (value);
+			break;
+		case PROP_GAMMA:
+			gst_aravis->gamma = g_value_get_double (value);
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
@@ -898,6 +926,21 @@ gst_aravis_get_property (GObject * object, guint prop_id, GValue * value,
 			break;
 		case PROP_USB_MODE:
 			g_value_set_enum(value, gst_aravis->usb_mode);
+			break;
+		case PROP_WHITE_BALANCE_AUTO:
+			g_value_set_enum(value, gst_aravis->white_balance_auto);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_R:
+			g_value_set_double(value, gst_aravis->white_balance_ratio_r);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_G:
+			g_value_set_double(value, gst_aravis->white_balance_ratio_g);
+			break;
+		case PROP_WHITE_BALANCE_RATIO_B:
+			g_value_set_double(value, gst_aravis->white_balance_ratio_b);
+			break;
+		case PROP_GAMMA:
+			g_value_set_double(value, gst_aravis->gamma);
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1110,6 +1153,47 @@ gst_aravis_class_init (GstAravisClass * klass)
 			       "USB mode (synchronous/asynchronous)",
 			       GST_TYPE_ARV_USB_MODE, ARV_UV_USB_MODE_DEFAULT,
 			       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property
+		(gobject_class,
+		 PROP_WHITE_BALANCE_RATIO_R,
+		 g_param_spec_double ("r-gain",
+				      "R Gain",
+				      "R-Gain for white balance",
+				      0, 15.0, 1.0,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+	g_object_class_install_property
+		(gobject_class,
+		 PROP_WHITE_BALANCE_RATIO_G,
+		 g_param_spec_double ("g-gain",
+				      "G Gain",
+				      "G-Gain for white balance",
+				      0, 15.0, 1.0,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+	g_object_class_install_property
+		(gobject_class,
+		 PROP_WHITE_BALANCE_RATIO_B,
+		 g_param_spec_double ("b-gain",
+				      "B Gain",
+				      "B-Gain for white balance",
+				      0, 15.0, 1.0,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));					  				
+	g_object_class_install_property
+		(gobject_class,
+		 PROP_WHITE_BALANCE_AUTO,
+		 g_param_spec_enum ("white-balance-auto",
+				    "Auto White Balance",
+				    "Auto White Balance Mode",
+				    GST_TYPE_ARV_AUTO, ARV_AUTO_OFF,
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+	g_object_class_install_property
+		(gobject_class,
+		 PROP_GAMMA,
+		 g_param_spec_double ("gamma",
+				      "Gamma",
+				      "Gamma",
+				      0, 4.0, 1.0,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
         GST_DEBUG_CATEGORY_INIT (aravis_debug, "aravissrc", 0, "Aravis interface");
 
